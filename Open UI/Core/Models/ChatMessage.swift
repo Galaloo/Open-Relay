@@ -214,6 +214,17 @@ nonisolated struct ChatMessageFile: Codable, Hashable, Sendable {
     var serverMetadata: Data? = nil
 
     var referenceID: String? { id ?? url }
+    var isVideo: Bool {
+        type?.lowercased() == "video"
+            || contentType?.lowercased().hasPrefix("video/") == true
+            || name?.lowercased().hasSuffix(".mp4") == true
+    }
+    var posterFileID: String? {
+        guard let poster = serverDictionary["poster"] as? String else { return nil }
+        let parts = poster.split(separator: "/")
+        guard let index = parts.firstIndex(of: "files"), parts.indices.contains(index + 1) else { return nil }
+        return String(parts[index + 1])
+    }
     var identity: String { "\(type ?? "file"):\(referenceID ?? "")" }
     var isContext: Bool {
         guard referenceID != nil else { return false }
