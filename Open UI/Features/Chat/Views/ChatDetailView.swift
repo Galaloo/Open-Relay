@@ -2837,7 +2837,7 @@ struct ChatDetailView: View {
             // ── Message bubble / content ──
             messageBubble(for: message, isLastAssistant: isLastAssistant)
 
-            // ── Tool-generated images ──
+            // ── Tool-generated media ──
             // AnimatedPresence smoothly expands the height when files become available
             // (i.e. when streaming completes and displayFiles becomes non-empty).
             let vIdxFiles = activeVersionIndex[message.id] ?? -1
@@ -4575,6 +4575,7 @@ struct ChatDetailView: View {
     @ViewBuilder
     private func messageFilesView(files: [ChatMessageFile]) -> some View {
         let imageFiles = files.filter { $0.type == "image" || ($0.contentType ?? "").hasPrefix("image/") }
+        let videoFiles = files.filter(\.isVideo)
         if !imageFiles.isEmpty {
             let columns = imageFiles.count == 1
                 ? [GridItem(.flexible())]
@@ -4610,6 +4611,16 @@ struct ChatDetailView: View {
                         }
                     }
                 }
+            }
+        }
+        ForEach(Array(videoFiles.enumerated()), id: \.offset) { _, file in
+            if let fileID = file.referenceID, !fileID.isEmpty {
+                ChatVideoAttachmentView(
+                    fileID: fileID,
+                    posterFileID: file.posterFileID,
+                    title: file.name ?? "Video",
+                    apiClient: dependencies.apiClient
+                )
             }
         }
     }
